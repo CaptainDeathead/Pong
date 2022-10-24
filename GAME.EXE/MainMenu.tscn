@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Paddle.tscn" type="PackedScene" id=1]
+[ext_resource path="res://BallSprite.tscn" type="PackedScene" id=2]
+
+[node name="MainMenu" type="Node2D"]
+
+[node name="KinematicBody2D" parent="." instance=ExtResource( 1 )]
+position = Vector2( 42, 260 )
+
+[node name="KinematicBody2D2" parent="." instance=ExtResource( 2 )]
+position = Vector2( 305, 222 )
+speed = 200
