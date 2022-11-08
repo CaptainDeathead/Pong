@@ -67,9 +67,9 @@ while run:
     ballx += bvelx
     bally += bvely
 
-    if keys[pygame.K_UP]:
+    if keys[pygame.K_UP] and y > 0:
         y -= vel
-    if keys[pygame.K_DOWN]:
+    if keys[pygame.K_DOWN] and y < 440:
         y += vel
 
     win.fill((0, 0, 0))
