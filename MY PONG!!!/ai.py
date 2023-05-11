@@ -5,12 +5,9 @@ import os
 import pickle
 import random
 import matplotlib as plt
+import time
+import datetime
 pygame.init()
-
-# Creates a blank window with the dimentions of 500 by 500.
-win = pygame.display.set_mode((500, 500))
-# Sets the title of the window to Pong
-pygame.display.set_caption("Pong")
 
 fps = pygame.time.Clock()
 x = 25
@@ -38,6 +35,7 @@ config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                             config_path)
 
 def train_ai(genome, genome1, config, genomes):
+    start_time = time.time()
     # Creates a blank window with the dimentions of 500 by 500.
     win = pygame.display.set_mode((500, 500))
     # Sets the title of the window to Pong
@@ -70,9 +68,11 @@ def train_ai(genome, genome1, config, genomes):
         try:
             last_output = output[0]
             last_output1 = output1[0]
+            old_y = y
+            old_y1 = y1
         except:
             pass
-        pygame.time.delay(1)
+        #pygame.time.delay(1)
         # This will watch every input the user gets and tells it to python
         for event in pygame.event.get():
             # If user presses the close button on the window it stops the main game loop
@@ -134,13 +134,13 @@ def train_ai(genome, genome1, config, genomes):
         collide1 = paddle2.colliderect(ball)
         if collide == True:
             bvelx = 4
-            print("collision")
-            genome1.fitness += 2
+            #print("collision")
+            genome1.fitness += 5
             has_g1_hit = True
         if collide1 == True:
             bvelx = -4
-            print("collision")
-            genome.fitness += 2
+            #print("collision")
+            genome.fitness += 5
             has_g_hit = True
         # Check if it is game over
         if player1 == 9 and player2 != 9:
@@ -148,18 +148,21 @@ def train_ai(genome, genome1, config, genomes):
                 genome.fitness -= 3
             if has_g1_hit == False:
                 genome1.fitness -= 3
+            end_time = time.time()
             run = False
         elif player2 == 9 and player1 != 9:
             if has_g_hit == False:
                 genome.fitness -= 3
             if has_g1_hit == False:
                 genome1.fitness -= 3
+            end_time = time.time()
             run = False
         elif player1 == 9 and player2 == 9:
             if has_g_hit == False:
                 genome.fitness -= 3
             if has_g1_hit == False:
                 genome1.fitness -= 3
+            end_time = time.time()
             run = False
         # Update the display
         try:
@@ -169,9 +172,9 @@ def train_ai(genome, genome1, config, genomes):
             pass
         
         net = neat.nn.FeedForwardNetwork.create(genome, config)
-        output = net.activate((ballx, bally, y, height,))
+        output = net.activate((ballx, bally, y, height, bvelx, bvely, x,))
         net1 = neat.nn.FeedForwardNetwork.create(genome1, config)
-        output1 = net1.activate((ballx, bally, y1, height,))
+        output1 = net1.activate((ballx, bally, y1, height, bvelx, bvely, x1,))
         
         if output[0] > 0:
             if y > 0:
@@ -189,14 +192,19 @@ def train_ai(genome, genome1, config, genomes):
             
         try:
             if output1[0] == last_output:
-                genome1.fitness -= 1
+                genome1.fitness -= 50
             if output1[0] == last_output1:
+                genome1.fitness -= 50
+            if old_y == y:
+                genome.fitness -= 1
+            if old_y1 == y1:
                 genome1.fitness -= 1
         except:
             pass
         
         pygame.display.update()
-    #pygame.quit()
+        pygame.display.flip()
+    return start_time, end_time
     
 def run(genome, config):
     # Creates a blank window with the dimentions of 500 by 500.
@@ -295,7 +303,7 @@ def run(genome, config):
             print("collision")
 
         net = neat.nn.FeedForwardNetwork.create(genome, config)
-        output = net.activate((ballx, bally, y,))
+        output = net.activate((ballx, bally, y, height, bvelx, bvely, x))
 
         if output[0] > 50:
             y -= 5
@@ -333,26 +341,72 @@ def eval_genomes(genomes, config):
     global fitness_values
     fitness_values = []
     genms = []
-    
+    games_played = 1
+
     for i, (genome_id, genome) in enumerate(genomes):
         genome.fitness = 0
         genms.append(genome)
-        
+
+    total_games = len(genms) * (len(genms) - 1) / 2
+    games_remaining = total_games - games_played
+
     tested = []
-        
-    for i in range(0, len(genms)):
-        if genms[i] in tested:
-            continue
-        genome = genms[i-1]
-        genome1 = genms[i]
-        fitness_values.append(genome.fitness)
-        fitness_values.append(genome1.fitness)
-        tested.append(genome)
-        tested.append(genome1)
-        
-    train_ai(genome, genome1, config, genomes)
+
+    for i in range(len(genms)):
+        for j in range(i+1, len(genms)):
+            genome1 = genms[i]
+            genome2 = genms[j]
+
+            if (genome1, genome2) in tested or (genome2, genome1) in tested:
+                continue
+
+            genome1.fitness = 0
+            genome2.fitness = 0
+
+            days = 0
+            hours = 0
+            minutes = 0
+            seconds = 0
+
+            start_time, end_time = train_ai(genome1, genome2, config, genomes)
+            game_time = end_time - start_time
+            games_remaining = total_games - games_played
+
+            avg_game_time = (game_time / games_played) * 100
+            estimated_time = avg_game_time * games_remaining
+            estimated_time = int(estimated_time)
+
+            # format estimated time into days, hours, minutes, seconds
+            while estimated_time > 0:
+                if estimated_time >= 86400:
+                    estimated_time -= 86400
+                    days += 1
+                elif estimated_time >= 3600:
+                    estimated_time -= 3600
+                    hours += 1
+                elif estimated_time >= 60:
+                    estimated_time -= 60
+                    minutes += 1
+                elif estimated_time >= 1:
+                    estimated_time -= 1
+                    seconds += 1
+
+            os.system('cls')
+            print("Estimated time remaining: " + str(days) + " days, " + str(hours) + " hours, " + str(minutes) + " minutes, " + str(seconds) + " seconds")
+            games_played += 1
+            print("Games played: " + str(games_played) + "/" + str(int(total_games)) + "\n")
+            print("*****Generation " + str(p.generation) + "*****\n")
+            print("Genome " + str(i) + " vs. Genome " + str(j) + "\n")
+            print("Genome " + str(i) + " fitness: " + str(genome1.fitness))
+            print("Genome " + str(j) + " fitness: " + str(genome2.fitness))
+
+            fitness_values.append(genome1.fitness)
+            fitness_values.append(genome2.fitness)
+
+            tested.append((genome1, genome2))
                 
 def run_neat(config):
+    global p
     # HOW TO LOAD A CHECKPOINT!!!
     # --------------------------------------------------------------
     #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-599')
@@ -363,12 +417,12 @@ def run_neat(config):
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
     p.add_reporter(neat.Checkpointer(50))
-    winner = p.run(eval_genomes, 10000)
+    winner = p.run(eval_genomes, 50)
     with open('winner.pkl', 'wb') as f:
         pickle.dump(winner, f)
     
 if __name__ == '__main__':
-    run_neat(config)
-    #with open('winner.pkl', 'rb') as f:
-    #    winner = pickle.load(f)
-    #run(winner, config)
+    #run_neat(config)
+    with open('winner.pkl', 'rb') as f:
+        winner = pickle.load(f)
+    run(winner, config)
