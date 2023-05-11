@@ -45,6 +45,7 @@ while run:
     if ballx >= 500:
         #bvelx = randint(-10, -5)
         player2 += 1
+        print(player2)
         ballx = 250
         bally = 250
         bvelx = 2
@@ -53,6 +54,7 @@ while run:
     if ballx <= 0:
         #bvelx = randint(5, 10)
         player1 += 1
+        print(player1)
         ballx = 250
         bally = 250
         bvelx = -2
@@ -67,9 +69,9 @@ while run:
     ballx += bvelx
     bally += bvely
 
-    if keys[pygame.K_UP] and y > 0:
+    if keys[pygame.K_UP]:
         y -= vel
-    if keys[pygame.K_DOWN] and y < 440:
+    if keys[pygame.K_DOWN]:
         y += vel
 
     win.fill((0, 0, 0))
@@ -86,9 +88,11 @@ while run:
 
     if collide == True:
         bvelx = randint(4, 7)
+        print("collision")
 
     if collide1 == True:
         bvelx = randint(-7, -4)
+        print("collision")
     
     if bally > y1:
         y1 += vel
