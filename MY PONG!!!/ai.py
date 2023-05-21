@@ -4,7 +4,7 @@ import neat
 import os
 import pickle
 import random
-import matplotlib as plt
+#import matplotlib as plt
 import time
 import datetime
 pygame.init()
@@ -48,9 +48,9 @@ def train_ai(genome, genome1, config, genomes):
     balls = 10
     width = 20
     height = 60
-    vel = 5
+    vel = 8
     bvelx = random.choice([-4, 4])
-    bvely = random.choice([-2, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6,])
+    bvely = random.choice([-1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
     player1 = 0
     player2 = 0
     x1 = 450
@@ -90,10 +90,24 @@ def train_ai(genome, genome1, config, genomes):
         if ballx >= 500:
             #bvelx = randint(-10, -5)
             player2 += 1
+            if has_g1_hit:
+                genome1.fitness += 2
+                has_g1_hit = False
+            else:
+                genome1.fitness -= 2
+                has_g1_hit = False
+            if has_g_hit:
+                genome.fitness += 2
+                has_g_hit = False
+            else:
+                genome.fitness -= 2
+                has_g_hit = False
+            has_g_hit = False
+            has_g1_hit = False
             ballx = 250
             bally = 250
             bvelx = random.choice([-2, 2])
-            bvely = random.choice([-2, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2])
+            bvely = random.choice([-1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
             #genome.fitness -= 2
             #if has_g1_hit:
             #    genome1.fitness += 2
@@ -101,10 +115,24 @@ def train_ai(genome, genome1, config, genomes):
         if ballx <= 0:
             #bvelx = randint(5, 10)
             player1 += 1
+            if has_g_hit:
+                genome.fitness += 2
+                has_g_hit = False
+            else:
+                genome.fitness -= 2
+                has_g_hit = False
+            if has_g1_hit:
+                genome1.fitness += 2
+                has_g1_hit = False
+            else:
+                genome1.fitness -= 2
+                has_g1_hit = False
+            has_g_hit = False
+            has_g1_hit = False
             ballx = 250
             bally = 250
             bvelx = random.choice([-2, 2])
-            bvely = random.choice([-2, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2])
+            bvely = random.choice([-1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
             #genome1.fitness -= 2
             #if has_g_hit:
             #    genome.fitness += 2
@@ -136,13 +164,15 @@ def train_ai(genome, genome1, config, genomes):
         if collide == True:
             bvelx = 4
             #print("collision")
-            genome1.fitness += 1
-            has_g1_hit = True
+            genome.fitness += 2
+            has_g_hit = True
+            print("collision")
         if collide1 == True:
             bvelx = -4
             #print("collision")
-            genome.fitness += 1
-            has_g_hit = True
+            genome1.fitness += 2
+            has_g1_hit = True
+            print("collision")
         #if player1 == 1:
         #    end_time = time.time()
         #    run = False
@@ -150,15 +180,27 @@ def train_ai(genome, genome1, config, genomes):
         #    end_time = time.time()
         #    run = False
         # Check if it is game over
-        if player1 == 9 and player2 != 9:
+        if player1 == 5 and player2 != 5:
             end_time = time.time()
             run = False
-        elif player2 == 9 and player1 != 9:
+            if has_g_hit == False:
+                genome.fitness -= 5
+            if has_g1_hit == False:
+                genome1.fitness -= 5
+        elif player2 == 5 and player1 != 5:
             end_time = time.time()
             run = False
-        elif player1 == 9 and player2 == 9:
+            if has_g_hit == False:
+                genome.fitness -= 5
+            if has_g1_hit == False:
+                genome1.fitness -= 5
+        elif player1 == 5 and player2 == 5:
             end_time = time.time()
             run = False
+            if has_g_hit == False:
+                genome.fitness -= 5
+            if has_g1_hit == False:
+                genome1.fitness -= 5
         # Update the display
         try:
             win.blit(text,(100, 50))
@@ -167,9 +209,9 @@ def train_ai(genome, genome1, config, genomes):
             pass
         
         net = neat.nn.FeedForwardNetwork.create(genome, config)
-        output = net.activate((y, bally, abs(x - ballx),))
+        output = net.activate((y, bally, abs(x - ballx)))
         net1 = neat.nn.FeedForwardNetwork.create(genome1, config)
-        output1 = net1.activate((y1, bally, abs(x1 - ballx),))
+        output1 = net1.activate((y1, bally, abs(x1 - ballx)))
         
         decision = output.index(max(output))
         decision1 = output1.index(max(output1))
@@ -177,15 +219,26 @@ def train_ai(genome, genome1, config, genomes):
         if decision == 0:
             pass
         elif decision == 1:
-            y += vel
+            if y > 0:
+                y -= vel
         else:
-            y -= vel
+            if y < 440:
+                y += vel
         if decision1 == 0:
             pass
         elif decision1 == 1:
-            y1 += vel
+            if y1 > 0:
+                y1 -= vel
         else:
-            y1 -= vel
+            if y1 < 440:
+                y1 += vel
+
+        #if genome1.fitness > 40:
+        #    end_time = time.time()
+        #    run = False
+        #if genome.fitness > 40:
+        #    end_time = time.time()
+        #    run = False
             
         #try:
         #    if output1[0] == last_output:
@@ -201,7 +254,7 @@ def train_ai(genome, genome1, config, genomes):
         
         pygame.display.update()
         pygame.display.flip()
-    return start_time, end_time
+    return start_time, end_time, genome, genome1
     
 def run(genome, config):
     # Creates a blank window with the dimentions of 500 by 500.
@@ -254,7 +307,7 @@ def run(genome, config):
             ballx = 250
             bally = 250
             bvelx = 2
-            bvely = random.choice([-2, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2])
+            bvely = random.choice([-1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 
         if ballx <= 0:
             #bvelx = randint(5, 10)
@@ -263,7 +316,7 @@ def run(genome, config):
             ballx = 250
             bally = 250
             bvelx = -2
-            bvely = random.choice([-2, -1.9, -1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2])
+            bvely = random.choice([-1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
 
         if bally >= 500:
             bvely = randint(-7, -4)
@@ -275,9 +328,9 @@ def run(genome, config):
         bally += bvely
 
         if keys[pygame.K_UP]:
-            y1 -= vel
+            y -= vel
         if keys[pygame.K_DOWN]:
-            y1 += vel
+            y += vel
 
         win.fill((0, 0, 0))
 
@@ -300,12 +353,16 @@ def run(genome, config):
             print("collision")
 
         net = neat.nn.FeedForwardNetwork.create(genome, config)
-        output = net.activate((ballx, bally, y, height, bvelx, bvely, x))
-        decition = output.index(max(output))
-        if decition == 0:
-            y -= vel
-        if decition == 1:
-            y += vel
+        output = net.activate((y1, bally, abs(x1 - ballx)))
+        decision = output.index(max(output))
+        if decision == 0:
+            pass
+        elif decision == 1:
+            if y1 > 0:
+                y1 -= vel
+        else:
+            if y1 < 440:
+                y1 += vel
 
         # Check if it is game over
         if player1 == 9 and player2 != 9:
@@ -365,7 +422,7 @@ def eval_genomes(genomes, config):
             minutes = 0
             seconds = 0
 
-            start_time, end_time = train_ai(genome1, genome2, config, genomes)
+            start_time, end_time, genome1, genome2 = train_ai(genome1, genome2, config, genomes)
             game_time = end_time - start_time
             games_remaining = total_games - games_played
 
@@ -388,38 +445,62 @@ def eval_genomes(genomes, config):
                     estimated_time -= 1
                     seconds += 1
 
-            os.system('cls')
-            print("Estimated time remaining: " + str(days) + " days, " + str(hours) + " hours, " + str(minutes) + " minutes, " + str(seconds) + " seconds")
+            #os.system('cls')
+            #print("Estimated time remaining: " + str(days) + " days, " + str(hours) + " hours, " + str(minutes) + " minutes, " + str(seconds) + " seconds")
             games_played += 1
             print("Games played: " + str(games_played) + "/" + str(int(total_games)) + "\n")
-            print("*****Generation " + str(p.generation) + "*****\n")
-            print("Genome " + str(i) + " vs. Genome " + str(j) + "\n")
-            print("Genome " + str(i) + " fitness: " + str(genome1.fitness))
-            print("Genome " + str(j) + " fitness: " + str(genome2.fitness))
+            #print("*****Generation " + str(p.generation) + "*****\n")
+            #print("Genome " + str(i) + " vs. Genome " + str(j) + "\n")
+            #print("Genome " + str(i) + " fitness: " + str(genome1.fitness))
+            #print("Genome " + str(j) + " fitness: " + str(genome2.fitness))
+            #try:
+            #    print("Best fitness: " + str(max(fitness_values)) + "\n")
+            #except:
+            #    pass
 
             fitness_values.append(genome1.fitness)
             fitness_values.append(genome2.fitness)
 
             tested.append((genome1, genome2))
                 
-def run_neat(config):
+def run_neat(config, gens, check):
     global p
     # HOW TO LOAD A CHECKPOINT!!!
     # --------------------------------------------------------------
-    #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-599')
+    if type(check) != str:
+        p = neat.Checkpointer.restore_checkpoint(f'neat-checkpoint-{str(check)}')
     # comment out th p.neat.Population(config) line below
     # --------------------------------------------------------------
-    p = neat.Population(config)
+    else:
+        p = neat.Population(config)
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
     p.add_reporter(neat.Checkpointer(50))
-    winner = p.run(eval_genomes, 1000)
+    winner = p.run(eval_genomes, gens)
     with open('winner.pkl', 'wb') as f:
         pickle.dump(winner, f)
     
 if __name__ == '__main__':
-    run_neat(config)
+    #run_neat(config)
     #with open('winner.pkl', 'rb') as f:
     #    winner = pickle.load(f)
     #run(winner, config)
+
+    q = input("t to train, p to play: ")
+    if q == "t":
+        t = input("y to train, n to load checkpoint: ")
+        if t == "y":
+            n = int(input("number of generations: "))
+            run_neat(config, n, "n")
+        elif t == "n":
+            try:
+                c = int(input("checkpoint number: "))
+                n = int(input("number of generations: "))
+                run_neat(config, n, c)
+            except:
+                print("Invalid input or checkpoint does not exist")
+    elif q == "p":
+        with open('winner.pkl', 'rb') as f:
+            winner = pickle.load(f)
+        run(winner, config)
